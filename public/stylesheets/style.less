@@ -1,8 +1,48 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.container {
+  width: 80%;
+  margin-top: 20px;
+  display: flex;
+  .messages {
+    position: relative;
+    flex: 1;
+    border: 1px solid black;
+    height: 480px;
+    overflow: auto;
+    padding: 10px;
+    & > li.right {
+      text-align: right;
+      color: blueviolet;
+    }
+  }
+  .friends {
+    width: 240px;
+    border: 1px solid black;
+    border-left: none;
+    padding-top: 10px;
+    & > li {
+      padding-left: 10px;
+    }
+  }
 }
 
-a {
-  color: #00B7FF;
+.footer {
+  .send-input {
+    width: 300px;
+    border: 1px solid black;
+    margin-top: 10px;
+    padding: 0 10px;
+    line-height: 32px;
+    border-radius: 3px;
+  }
+  .send-button {
+    border: 1px solid black;
+    background-color: aqua;
+    height: 32px;
+    line-height: 32px;
+    border-radius: 3px;
+    vertical-align: middle;
+    padding: 0px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
 }

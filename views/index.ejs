@@ -2,10 +2,30 @@
 <html>
   <head>
     <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Tammudu+2&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/reset.css">
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
     <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <div class="container">
+      <ul class="messages">
+        <li>tony says: test</li>
+        <li>haha says: test2</li>
+        <li class="right">you say: test3</li>
+      </ul>
+      <ul class="friends">
+        <li>Tony</li>
+        <li>Tony2</li>
+        <li>Ton3</li>
+        <li>Ton4</li>
+      </ul>
+    </div>
+    <div class="footer">
+      <label>
+        <input class="send-input" />
+      </label>
+      <button class="send-button">send</button>
+    </div>
   </body>
 </html>
