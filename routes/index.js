@@ -14,9 +14,27 @@ router.get('/register', function(req, res) {
   res.json({ code: 200, data: null });
 });
 
+router.get('/logout', function(req, res) {
+  const connector = _.get(req.query, 'name', '');
+  chatRoom.onLeave(connector);
+  res.json({ code: 200, data: null });
+});
+
 router.get('/friends', function(req, res) {
   const list = chatRoom.getConnectors();
   res.json({ code: 200, data: list })
+});
+
+router.get('/messages', function(req, res) {
+  const list = chatRoom.getMessages();
+  res.json({ code: 200, data: list })
+});
+
+router.get('/send', function(req, res) {
+  const connector = _.get(req.query, 'name', '');
+  const content = _.get(req.query, 'content', '');
+  chatRoom.receive({ connector: connector, content: content });
+  res.json({ code: 200, data: null });
 });
 
 module.exports = router;

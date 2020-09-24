@@ -8,46 +8,78 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <div><button class="connect-button">Connect To Chat Room</button></div>
+    <div>
+      <button class="connect-button">Connect To Chat Room</button>
+      <span style="display: inline-block;margin-left: 10px;">Welcome <span id="connector"></span></span>
+    </div>
     <div class="container">
-      <ul class="messages">
-        <li>tony says: test</li>
-        <li>haha says: test2</li>
-        <li class="right">you say: test3</li>
-      </ul>
-      <ul class="friends">
-        <li>Tony</li>
-        <li>Tony2</li>
-        <li>Ton3</li>
-        <li>Ton4</li>
-      </ul>
+      <ul id="messages" class="messages"></ul>
+      <ul id="friends" class="friends"></ul>
     </div>
     <div class="footer">
       <label>
-        <input class="send-input" />
+        <input id="sendInput" class="send-input" />
       </label>
-      <button class="send-button">send</button>
+      <button id="sendBtn" class="send-button">send</button>
     </div>
-    <scrpt src="/javascripts/chatroom.js"></scrpt>
+    <script src="/javascripts/dom.js"></script>
+    <script src="/javascripts/request.js"></script>
     <script>
+      var TIMEOUT = 5000;
+      var CONNECT_BUTTON_TEXT = 'Connect To Chat Room';
+      var INPUT_CONNECT_NAME_TEXT = 'Please input connect name';
+      var SING_NAME_TEXT = 'Sign your name first!!!';
+      var WRITE_SOMETHING_TEXT = 'You must say something ~';
+      var LOGOUT_TEXT = 'Log out';
+
       var connectButton = document.querySelector('.connect-button');
+      var sendBtn = document.getElementById('sendBtn');
+      var sendInput = document.getElementById('sendInput');
+      var connector = '';
+
+      var friendsInterval;
+      var messagesInterval;
+      function listen() {
+        if (connector) {
+          friendsInterval = setInterval(() => { ChatRequest.getFriends(); }, TIMEOUT)
+          messagesInterval = setInterval(() => { ChatRequest.getMessages(connector); }, TIMEOUT)
+        }
+      }
+
+      function unListen() {
+        friendsInterval && clearInterval(friendsInterval);
+        messagesInterval && clearInterval(messagesInterval);
+      }
 
       connectButton.addEventListener('click', function() {
-        const name = window.prompt('Please input connect name');
-        fetch('/register?name=' + name).then(function(res) {
-          return res.json();
-        }).then(function(data) {
-          console.log(data);
-        });
+        if (connector) {
+          ChatRequest.logout(connector);
+          connectButton.textContent = CONNECT_BUTTON_TEXT;
+          connector = '';
+          // unListen();
+        } else {
+          connector = window.prompt(INPUT_CONNECT_NAME_TEXT);
+          ChatRequest.register(connector);
+          connectButton.textContent = LOGOUT_TEXT;
+          listen();
+        }
       });
 
-      setInterval(() => {
-        fetch('/friends').then(function(res) {
-          return res.json();
-        }).then(function(data) {
-          console.log(data);
-        });
-      }, 1000)
+      sendBtn.addEventListener('click', function() {
+        var inputValue = sendInput.value;
+        if (!connector) {
+          alert(SING_NAME_TEXT)
+          return;
+        }
+
+        if (!inputValue) {
+          alert(WRITE_SOMETHING_TEXT);
+          return;
+        }
+
+        sendInput.value = '';
+        ChatRequest.send(connector, inputValue)
+      });
     </script>
   </body>
 </html>

@@ -7,8 +7,14 @@ module.exports = {
             connectors.push(connector);
         }
     },
-    print(messages) {
-        messages.push(messages);
+    onLeave(connector) {
+      if (connectors.includes(connector)) {
+        const index = connectors.indexOf(connector);
+        connectors.splice(index, 1);
+      }
+    },
+    receive(message) {
+        messages.push(message);
     },
     onError() {},
     getMessages() {
