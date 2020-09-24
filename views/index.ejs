@@ -8,6 +8,7 @@
   </head>
   <body>
     <h1><%= title %></h1>
+    <div><button class="connect-button">Connect To Chat Room</button></div>
     <div class="container">
       <ul class="messages">
         <li>tony says: test</li>
@@ -27,5 +28,26 @@
       </label>
       <button class="send-button">send</button>
     </div>
+    <scrpt src="/javascripts/chatroom.js"></scrpt>
+    <script>
+      var connectButton = document.querySelector('.connect-button');
+
+      connectButton.addEventListener('click', function() {
+        const name = window.prompt('Please input connect name');
+        fetch('/register?name=' + name).then(function(res) {
+          return res.json();
+        }).then(function(data) {
+          console.log(data);
+        });
+      });
+
+      setInterval(() => {
+        fetch('/friends').then(function(res) {
+          return res.json();
+        }).then(function(data) {
+          console.log(data);
+        });
+      }, 1000)
+    </script>
   </body>
 </html>
