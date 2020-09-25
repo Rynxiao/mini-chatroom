@@ -22,64 +22,8 @@
       </label>
       <button id="sendBtn" class="send-button">send</button>
     </div>
-    <script src="/javascripts/dom.js"></script>
     <script src="/javascripts/request.js"></script>
-    <script>
-      var TIMEOUT = 5000;
-      var CONNECT_BUTTON_TEXT = 'Connect To Chat Room';
-      var INPUT_CONNECT_NAME_TEXT = 'Please input connect name';
-      var SING_NAME_TEXT = 'Sign your name first!!!';
-      var WRITE_SOMETHING_TEXT = 'You must say something ~';
-      var LOGOUT_TEXT = 'Log out';
-
-      var connectButton = document.querySelector('.connect-button');
-      var sendBtn = document.getElementById('sendBtn');
-      var sendInput = document.getElementById('sendInput');
-      var connector = '';
-
-      var friendsInterval;
-      var messagesInterval;
-      function listen() {
-        if (connector) {
-          friendsInterval = setInterval(() => { ChatRequest.getFriends(); }, TIMEOUT)
-          messagesInterval = setInterval(() => { ChatRequest.getMessages(connector); }, TIMEOUT)
-        }
-      }
-
-      function unListen() {
-        friendsInterval && clearInterval(friendsInterval);
-        messagesInterval && clearInterval(messagesInterval);
-      }
-
-      connectButton.addEventListener('click', function() {
-        if (connector) {
-          ChatRequest.logout(connector);
-          connectButton.textContent = CONNECT_BUTTON_TEXT;
-          connector = '';
-          // unListen();
-        } else {
-          connector = window.prompt(INPUT_CONNECT_NAME_TEXT);
-          ChatRequest.register(connector);
-          connectButton.textContent = LOGOUT_TEXT;
-          listen();
-        }
-      });
-
-      sendBtn.addEventListener('click', function() {
-        var inputValue = sendInput.value;
-        if (!connector) {
-          alert(SING_NAME_TEXT)
-          return;
-        }
-
-        if (!inputValue) {
-          alert(WRITE_SOMETHING_TEXT);
-          return;
-        }
-
-        sendInput.value = '';
-        ChatRequest.send(connector, inputValue)
-      });
-    </script>
+    <script src="/javascripts/notification.js"></script>
+    <script src="/javascripts/dom.js"></script>
   </body>
 </html>

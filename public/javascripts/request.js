@@ -1,6 +1,4 @@
 window.ChatRequest = (function() {
-  var connector = document.getElementById('connector');
-
   var myFetch = function(url, data) {
     var requestArgs = { method: 'GET' };
     if (!!data) {
@@ -25,41 +23,21 @@ window.ChatRequest = (function() {
 
   return {
     register(name) {
-      myFetch('/register?name=' + name).then(function(data) {
-        if (data.code === 200) {
-          connector.textContent = name;
-        }
-      });
+      return myFetch('/register?name=' + name);
     },
     logout(connector) {
-      myFetch('/logout?name=' + connector).then(function (data) {
-        if (data.code === 200) {
-          connector.textContent = '';
-        }
-      })
+      return myFetch('/logout?name=' + connector);
     },
     send(name, text) {
-      return myFetch('/send?name=' + name + '&content=' + text).then(function(data) {
+      myFetch('/send?name=' + name + '&content=' + text).then(function(data) {
         if (data.code === 200) {
           console.log('send data successfully!');
           console.log('name: ' + name + ', content: ' + text );
         }
       });
     },
-    getFriends() {
-      myFetch('/friends').then(function(data) {
-        ChatroomDOM.renderFriends(data.data);
-      });
+    getDatas() {
+      return myFetch('/datas');
     },
-    getMessages(name) {
-      myFetch('/messages').then(function(data) {
-        ChatroomDOM.renderMessages(data.data, name);
-      });
-    },
-    getFriendsByLongPolling() {
-      timeout(5000, myFetch('/friends/long')).then(function (data) {
-        ChatroomDOM.renderFriends(data.data);
-      });
-    }
   }
 })();

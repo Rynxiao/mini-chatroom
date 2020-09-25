@@ -20,14 +20,10 @@ router.get('/logout', function(req, res) {
   res.json({ code: 200, data: null });
 });
 
-router.get('/friends', function(req, res) {
-  const list = chatRoom.getConnectors();
-  res.json({ code: 200, data: list })
-});
-
-router.get('/messages', function(req, res) {
-  const list = chatRoom.getMessages();
-  res.json({ code: 200, data: list })
+router.get('/datas', function(req, res) {
+  const connectors = chatRoom.getConnectors();
+  const messages = chatRoom.getMessages();
+  res.json({ code: 200, data: { connectors: connectors, messages: messages } })
 });
 
 router.get('/send', function(req, res) {
