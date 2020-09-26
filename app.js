@@ -5,11 +5,14 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var lessMiddleware = require('less-middleware');
+var setupLongPollingRoute = require('./public/javascripts/server/longPolling')
 
 var index = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+
+setupLongPollingRoute(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

@@ -1,35 +1,24 @@
-window.ChatRequest = (function() {
-  var myFetch = function(url, data) {
-    var requestArgs = { method: 'GET' };
-    if (!!data) {
-      requestArgs.method = 'POST';
-      requestArgs.body = JSON.stringify({ data: data });
-    }
-    return fetch(url, requestArgs).then(function(res) {
-      return res.json();
-    }).catch(function(err) {
-      console.error(err);
-    });
-  }
-
-  function timeout(ms, promise) {
+window.ChatRequest = (function($) {
+  var myAjax = function(url, config) {
+    var requestArgs = { method: 'GET', ...config };
     return new Promise(function(resolve, reject) {
-      setTimeout(function() {
-        reject(new Error("timeout"))
-      }, ms)
-      promise.then(resolve, reject)
-    })
+      $.ajax({ url, ...requestArgs }).done(function(res) {
+        resolve(res);
+      }).fail(function (error) {
+        reject(error);
+      });
+    });
   }
 
   return {
     register(name) {
-      return myFetch('/register?name=' + name);
+      return myAjax('/register?name=' + name);
     },
     logout(connector) {
-      return myFetch('/logout?name=' + connector);
+      return myAjax('/logout?name=' + connector);
     },
     send(name, text) {
-      myFetch('/send?name=' + name + '&content=' + text).then(function(data) {
+      myAjax('/send?name=' + name + '&content=' + text).then(function(data) {
         if (data.code === 200) {
           console.log('send data successfully!');
           console.log('name: ' + name + ', content: ' + text );
@@ -37,7 +26,13 @@ window.ChatRequest = (function() {
       });
     },
     getDatas() {
-      return myFetch('/datas');
+      return myAjax('/datas');
+    },
+    getV2Datas(key, config) {
+      return myAjax('/v2/datas?key=' + key, config);
+    },
+    unsubscribeV2() {
+      myAjax('/v2/unsubscribe')
     },
   }
-})();
+})(jQuery);

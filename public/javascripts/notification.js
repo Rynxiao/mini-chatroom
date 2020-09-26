@@ -8,7 +8,7 @@ window.ChatNotification = (function(Request) {
   };
   var selectedType = NOTIFICATION_MAP.SHORT_POLLING;
 
-  var ShortNotification = {
+  var ShortPollingNotification = {
     datasInterval: null,
     subscribe: function(callback) {
       this.datasInterval = setInterval(function() {
@@ -23,11 +23,38 @@ window.ChatNotification = (function(Request) {
     }
   }
 
+  var LongPollingNotification = {
+    setKey: function(key) {
+      localStorage.setItem('key', key);
+    },
+    getKey: function() {
+      return localStorage.getItem('key') || 'new';
+    },
+    subscribe: function(callback) {
+      var that = this;
+
+      Request.getV2Datas(this.getKey(),{ timeout: 10000 }).then(function(res) {
+        var data = res.data;
+        callback && callback(res);
+        that.subscribe(callback);
+        that.setKey(data.key);
+      }).catch(function (error) {
+        that.subscribe(callback);
+      });
+      return this.unsubscribe;
+    },
+    unsubscribe: function() {
+      Request.unsubscribeV2();
+    }
+  }
+
   function unsubscribe() {
     switch (selectedType) {
       case NOTIFICATION_MAP.SHORT_POLLING:
-        ShortNotification.unsubscribe();
+        ShortPollingNotification.unsubscribe();
         break;
+      case NOTIFICATION_MAP.LONG_POLLING:
+        LongPollingNotification.unsubscribe();
       default:
         break;
     }
@@ -38,8 +65,11 @@ window.ChatNotification = (function(Request) {
     switch (type) {
       case NOTIFICATION_MAP.SHORT_POLLING:
         selectedType = NOTIFICATION_MAP.SHORT_POLLING;
-        ShortNotification.subscribe(callback);
+        ShortPollingNotification.subscribe(callback);
         break;
+      case NOTIFICATION_MAP.LONG_POLLING:
+        selectedType = NOTIFICATION_MAP.LONG_POLLING;
+        LongPollingNotification.subscribe(callback);
       default:
         break;
     }

@@ -63,7 +63,7 @@ window.ChatroomDOM = (function (Request, NTF) {
       Request.register(connector).then(function() {
         connectorEle.textContent = connector;
         connectButton.textContent = LOGOUT_TEXT;
-        NTF.subscribe(NTF.NOTIFICATION_MAP.SHORT_POLLING, renderData);
+        NTF.subscribe(NTF.NOTIFICATION_MAP.LONG_POLLING, renderData);
       });
     }
   });

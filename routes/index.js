@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const chatRoom = require('../public/javascripts/chatroom');
+const chatRoom = require('../public/javascripts/server/chatroom');
 const _ = require('lodash');
 
 /* GET home page. */
@@ -32,5 +32,22 @@ router.get('/send', function(req, res) {
   chatRoom.receive({ connector: connector, content: content });
   res.json({ code: 200, data: null });
 });
+
+// router.get('/v2/datas', function(req, res) {
+//   const key = _.get(req.query, 'key', '');
+//   let contentKey = chatRoom.getContentKey();
+//
+//   while (key === contentKey) {
+//     sleep.sleep(5);
+//     contentKey = chatRoom.getContentKey();
+//   }
+//
+//   const connectors = chatRoom.getConnectors();
+//   const messages = chatRoom.getMessages();
+//   res.json({
+//     code: 200,
+//     data: { connectors: connectors, messages: messages, key: contentKey },
+//   });
+// });
 
 module.exports = router;
