@@ -45,10 +45,20 @@ window.ChatroomDOM = (function (Request, NTF) {
     messagesEle.innerHTML = messageList;
   }
 
+  function scrollIntoView() {
+    var messageEles = messagesEle.children;
+    var lastEle = messageEles[messageEles.length - 1];
+
+    if (lastEle) {
+      lastEle.scrollIntoView();
+    }
+  }
+
   function renderData(res) {
     var data = res.data;
     renderFriends(data.connectors);
     renderMessages(data.messages, connector);
+    scrollIntoView();
   }
 
   function renderAfterLogout() {
@@ -93,9 +103,7 @@ window.ChatroomDOM = (function (Request, NTF) {
     }
   }
 
-  connectButton.addEventListener('click', loginOrOut);
-
-  sendBtn.addEventListener('click', function () {
+  function sendMessage() {
     var inputValue = sendInput.value;
     if (!connector) {
       alert(SING_NAME_TEXT)
@@ -114,7 +122,16 @@ window.ChatroomDOM = (function (Request, NTF) {
     } else {
       Request.send(connector, inputValue)
     }
-  });
+  }
+
+  connectButton.addEventListener('click', loginOrOut);
+  sendBtn.addEventListener('click', sendMessage);
+  document.addEventListener('keydown', function (event) {
+    var e = event || window.event;
+    if (e && e.keyCode === 13) {
+      sendMessage();
+    }
+  })
 
   return {
     renderData,
