@@ -6,6 +6,7 @@ window.ChatroomDOM = (function (Request, NTF) {
   var sendBtn = document.getElementById('sendBtn');
   var sendInput = document.getElementById('sendInput');
   var connector = '';
+  var selectedType = NTF.NOTIFICATION_MAP.WEBSOCKET;
 
   var CONNECT_BUTTON_TEXT = 'Connect To Chat Room';
   var INPUT_CONNECT_NAME_TEXT = 'Please input connect name';
@@ -27,15 +28,15 @@ window.ChatroomDOM = (function (Request, NTF) {
     messages.forEach(function (message) {
       var isSelf = message.connector === connector;
       var tpl = '<li>' +
-       '<span class="sender">'+ message.connector + '</span>' +
-       '<span class="sender-content">'+ message.content +'' + '</span>' +
-      '</li>';
+        '<span class="sender">' + message.connector + '</span>' +
+        '<span class="sender-content">' + message.content + '' + '</span>' +
+        '</li>';
 
       if (isSelf) {
         tpl = '<li class="right">' +
-          '<span class="sender-content">'+ message.content +'' + '</span>' +
+          '<span class="sender-content">' + message.content + '' + '</span>' +
           '<span class="sender">yourself</span>' +
-        '</li>'
+          '</li>'
       }
 
       messageList += tpl;
@@ -50,25 +51,51 @@ window.ChatroomDOM = (function (Request, NTF) {
     renderMessages(data.messages, connector);
   }
 
-  connectButton.addEventListener('click', function() {
-    if (connector) {
-      Request.logout(connector).then(function() {
-        connectorEle.textContent = '';
-        connectButton.textContent = CONNECT_BUTTON_TEXT;
-        connector = '';
+  function renderAfterLogout() {
+    connectorEle.textContent = '';
+    connectButton.textContent = CONNECT_BUTTON_TEXT;
+    connector = '';
+  }
+
+  function renderAfterRegister() {
+    connectorEle.textContent = connector;
+    connectButton.textContent = LOGOUT_TEXT;
+  }
+
+  function logout() {
+    if (selectedType === NTF.NOTIFICATION_MAP.WEBSOCKET) {
+      NTF.unsubscribe();
+    } else {
+      Request.logout(connector).then(function () {
+        renderAfterLogout();
         NTF.unsubscribe();
       });
+    }
+  }
+
+  function register() {
+    connector = window.prompt(INPUT_CONNECT_NAME_TEXT);
+    if (selectedType === NTF.NOTIFICATION_MAP.WEBSOCKET) {
+      NTF.subscribe(NTF.NOTIFICATION_MAP.WEBSOCKET, connector);
     } else {
-      connector = window.prompt(INPUT_CONNECT_NAME_TEXT);
-      Request.register(connector).then(function() {
-        connectorEle.textContent = connector;
-        connectButton.textContent = LOGOUT_TEXT;
-        NTF.subscribe(NTF.NOTIFICATION_MAP.LONG_POLLING, renderData);
+      Request.register(connector).then(function () {
+        renderAfterRegister();
+        NTF.subscribe(selectedType);
       });
     }
-  });
+  }
 
-  sendBtn.addEventListener('click', function() {
+  function loginOrOut() {
+    if (connector) {
+      logout();
+    } else {
+      register();
+    }
+  }
+
+  connectButton.addEventListener('click', loginOrOut);
+
+  sendBtn.addEventListener('click', function () {
     var inputValue = sendInput.value;
     if (!connector) {
       alert(SING_NAME_TEXT)
@@ -81,6 +108,17 @@ window.ChatroomDOM = (function (Request, NTF) {
     }
 
     sendInput.value = '';
-    Request.send(connector, inputValue)
+
+    if (selectedType === NTF.NOTIFICATION_MAP.WEBSOCKET) {
+      NTF.send({ connector, content: inputValue });
+    } else {
+      Request.send(connector, inputValue)
+    }
   });
+
+  return {
+    renderData,
+    renderAfterRegister,
+    renderAfterLogout,
+  }
 })(ChatRequest, ChatNotification);

@@ -10,10 +10,10 @@ window.ChatNotification = (function(Request) {
 
   var ShortPollingNotification = {
     datasInterval: null,
-    subscribe: function(callback) {
+    subscribe: function() {
       this.datasInterval = setInterval(function() {
         Request.getDatas().then(function(res) {
-          callback && callback(res);
+          window.ChatroomDOM.renderData(res);
         })
       }, TIMEOUT);
       return this.unsubscribe;
@@ -30,21 +30,56 @@ window.ChatNotification = (function(Request) {
     getKey: function() {
       return localStorage.getItem('key') || 'new';
     },
-    subscribe: function(callback) {
+    subscribe: function() {
       var that = this;
 
       Request.getV2Datas(this.getKey(),{ timeout: 10000 }).then(function(res) {
         var data = res.data;
-        callback && callback(res);
-        that.subscribe(callback);
+        window.ChatroomDOM.renderData(res);
+        that.subscribe();
         that.setKey(data.key);
       }).catch(function (error) {
-        that.subscribe(callback);
+        that.subscribe();
       });
       return this.unsubscribe;
     },
     unsubscribe: function() {
       Request.unsubscribeV2();
+    }
+  }
+
+  var WebsocketNotification = {
+    socket: null,
+    subscribe: function(args) {
+      var connector = args[1];
+      this.socket = io();
+
+      this.socket.emit('register', connector);
+
+      this.socket.on('register done', function() {
+        window.ChatroomDOM.renderAfterRegister();
+      });
+
+      this.socket.on('data', function(res) {
+        window.ChatroomDOM.renderData(res);
+      });
+
+      this.socket.on('disconnect', function() {
+        window.ChatroomDOM.renderAfterLogout();
+      });
+
+      return this.unsubscribe;
+    },
+    send: function(message) {
+      if (this.socket) {
+        this.socket.emit('chat', message);
+      }
+    },
+    unsubscribe: function() {
+      if (this.socket) {
+        this.socket.disconnect();
+        this.socket = null;
+      }
     }
   }
 
@@ -55,21 +90,32 @@ window.ChatNotification = (function(Request) {
         break;
       case NOTIFICATION_MAP.LONG_POLLING:
         LongPollingNotification.unsubscribe();
+        break;
+      case NOTIFICATION_MAP.WEBSOCKET:
+        WebsocketNotification.unsubscribe();
+        break;
       default:
         break;
     }
   }
 
-  function subscribe(type, callback) {
+  function subscribe() {
+    var args = arguments;
+    var type = args[0];
     unsubscribe();
     switch (type) {
       case NOTIFICATION_MAP.SHORT_POLLING:
         selectedType = NOTIFICATION_MAP.SHORT_POLLING;
-        ShortPollingNotification.subscribe(callback);
+        ShortPollingNotification.subscribe();
         break;
       case NOTIFICATION_MAP.LONG_POLLING:
         selectedType = NOTIFICATION_MAP.LONG_POLLING;
-        LongPollingNotification.subscribe(callback);
+        LongPollingNotification.subscribe();
+        break;
+      case NOTIFICATION_MAP.WEBSOCKET:
+        selectedType = NOTIFICATION_MAP.WEBSOCKET;
+        WebsocketNotification.subscribe(args);
+        break;
       default:
         break;
     }
@@ -78,6 +124,7 @@ window.ChatNotification = (function(Request) {
   return {
     subscribe,
     unsubscribe,
+    send: WebsocketNotification.send.bind(WebsocketNotification),
     NOTIFICATION_MAP,
   }
 })(ChatRequest);

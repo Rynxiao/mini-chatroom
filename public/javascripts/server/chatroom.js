@@ -24,6 +24,11 @@ module.exports = {
     getConnectors() {
         return connectors;
     },
+    getDatas() {
+      var connectors = this.getConnectors();
+      var messages = this.getMessages();
+      return {connectors, messages};
+    },
     getContentKey() {
       const len = messages.length;
       const connectorsStr = connectors.join(',');
