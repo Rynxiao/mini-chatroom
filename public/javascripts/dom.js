@@ -6,7 +6,7 @@ window.ChatroomDOM = (function (Request, NTF) {
   var sendBtn = document.getElementById('sendBtn');
   var sendInput = document.getElementById('sendInput');
   var connector = '';
-  var selectedType = NTF.NOTIFICATION_MAP.WEBSOCKET;
+  var selectedType = NTF.NOTIFICATION_MAP.SSE;
 
   var CONNECT_BUTTON_TEXT = 'Connect To Chat Room';
   var INPUT_CONNECT_NAME_TEXT = 'Please input connect name';

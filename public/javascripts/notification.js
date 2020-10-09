@@ -83,6 +83,25 @@ window.ChatNotification = (function(Request) {
     }
   }
 
+  var SSENotification = {
+    source: null,
+    subscribe: function() {
+      if ('EventSource' in window) {
+        this.source = new EventSource('/sse');
+
+        this.source.addEventListener('message', function(res) {
+          console.log('event', res);
+          const d = res.data;
+          window.ChatroomDOM.renderData(JSON.parse(d));
+        });
+      }
+      return this.unsubscribe;
+    },
+    unsubscribe: function () {
+      this.source && this.source.close();
+    }
+  }
+
   function unsubscribe() {
     switch (selectedType) {
       case NOTIFICATION_MAP.SHORT_POLLING:
@@ -93,6 +112,9 @@ window.ChatNotification = (function(Request) {
         break;
       case NOTIFICATION_MAP.WEBSOCKET:
         WebsocketNotification.unsubscribe();
+        break;
+      case NOTIFICATION_MAP.SSE:
+        SSENotification.unsubscribe();
         break;
       default:
         break;
@@ -115,6 +137,10 @@ window.ChatNotification = (function(Request) {
       case NOTIFICATION_MAP.WEBSOCKET:
         selectedType = NOTIFICATION_MAP.WEBSOCKET;
         WebsocketNotification.subscribe(args);
+        break;
+      case NOTIFICATION_MAP.SSE:
+        selectedType = NOTIFICATION_MAP.SSE;
+        SSENotification.subscribe();
         break;
       default:
         break;

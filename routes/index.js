@@ -50,4 +50,31 @@ router.get('/send', function(req, res) {
 //   });
 // });
 
+router.get('/sse', function(req, res) {
+  const connectors = chatRoom.getConnectors();
+  const messages = chatRoom.getMessages();
+  const response = { code: 200, data: { connectors: connectors, messages: messages } };
+
+  res.writeHead(200, {
+    "Content-Type":"text/event-stream",
+    "Cache-Control":"no-cache",
+    "Connection":"keep-alive",
+    "Access-Control-Allow-Origin": '*',
+  });
+
+  res.write("retry: 10000\n");
+  res.write("data: " + JSON.stringify(response) + "\n\n");
+
+  var interval = setInterval(function () {
+    const connectors = chatRoom.getConnectors();
+    const messages = chatRoom.getMessages();
+    const response = { code: 200, data: { connectors: connectors, messages: messages } };
+    res.write("data: " + JSON.stringify(response) + "\n\n");
+  }, 1000);
+
+  req.connection.addListener("close", function () {
+    clearInterval(interval);
+  }, false);
+});
+
 module.exports = router;
