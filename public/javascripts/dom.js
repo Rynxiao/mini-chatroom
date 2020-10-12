@@ -1,10 +1,12 @@
-window.ChatroomDOM = (function (Request, NTF) {
+window.ChatroomDOM = (function (Request, NTF, $) {
   var friendsEle = document.getElementById('friends');
   var messagesEle = document.getElementById('messages');
   var connectButton = document.querySelector('.connect-button');
   var connectorEle = document.getElementById('connector');
   var sendBtn = document.getElementById('sendBtn');
   var sendInput = document.getElementById('sendInput');
+  var $buttonsEle = $('#buttons');
+
   var connector = '';
   var selectedType = NTF.NOTIFICATION_MAP.SSE;
 
@@ -126,6 +128,18 @@ window.ChatroomDOM = (function (Request, NTF) {
 
   connectButton.addEventListener('click', loginOrOut);
   sendBtn.addEventListener('click', sendMessage);
+
+  $buttonsEle.on('click', function(event) {
+    var $target = $(event.target);
+    var type = $target.data('type');
+    $target.removeClass('active').addClass('active');
+    $target.siblings('button').removeClass('active');
+    console.log(type);
+
+    selectedType = type;
+    loginOrOut();
+  });
+
   document.addEventListener('keydown', function (event) {
     var e = event || window.event;
     if (e && e.keyCode === 13) {
@@ -138,4 +152,4 @@ window.ChatroomDOM = (function (Request, NTF) {
     renderAfterRegister,
     renderAfterLogout,
   }
-})(ChatRequest, ChatNotification);
+})(ChatRequest, ChatNotification, jQuery);

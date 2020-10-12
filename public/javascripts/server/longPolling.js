@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const chatRoom = require('./chatroom');
-const LONG_POLLING_TIMEOUT = 500;
+const LONG_POLLING_TIMEOUT = 1000;
 
 function pushDataToClient(key, longpoll) {
   var contentKey = chatRoom.getContentKey();

@@ -1,5 +1,5 @@
 .container {
-  width: 80%;
+  width: 85%;
   margin-top: 20px;
   display: flex;
 
@@ -47,6 +47,25 @@
 
     & > li {
       padding-left: 10px;
+    }
+  }
+
+  .buttons {
+    width: 150px;
+    .btn {
+      display: block;
+      width: 140px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      outline: none;
+      padding: 8px 0;
+      text-align: center;
+      margin-left: 10px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      &.active {
+        background-color: aqua;
+      }
     }
   }
 }

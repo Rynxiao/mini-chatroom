@@ -1,5 +1,5 @@
 window.ChatNotification = (function(Request) {
-  var TIMEOUT = 5000;
+  var TIMEOUT = 1000;
   var NOTIFICATION_MAP = {
     SHORT_POLLING: 'SHORT_POLLING',
     LONG_POLLING: 'LONG_POLLING',
@@ -90,7 +90,6 @@ window.ChatNotification = (function(Request) {
         this.source = new EventSource('/sse');
 
         this.source.addEventListener('message', function(res) {
-          console.log('event', res);
           const d = res.data;
           window.ChatroomDOM.renderData(JSON.parse(d));
         });
