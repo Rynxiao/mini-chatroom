@@ -7,7 +7,7 @@
 - 全双工通信：Websocket
 - 单向服务器推送：Server-Sent Events(SSE)
 
-从上面可以看出，真正是由服务器端进行消息推送的也就是Websocket以及SSE，至于轮询和长轮询就是营造出的假象。
+从上面可以看出，真正是由服务器端进行主动消息推送的也就是Websocket以及SSE，至于轮询和长轮询就是营造出的假象。
 
 文中会以一个简易聊天室的例子来分别通过上述的四种方式实现，代码地址[mini-chatroom](https://github.com/Rynxiao/mini-chatroom)
 
@@ -150,6 +150,14 @@ intervalId = setInterval(function() {
   pushDataToClient(key, longpoll);
 }, LONG_POLLING_TIMEOUT);
 ```
+
+为了方便演示，我将客户端发起请求的timeout改成了4s，注意观察下面的截图：
+
+![longPollingNetwork](./screenshots/long2.gif)
+
+可以看到，断开连接的两种方式，要么是超时，要么是请求有数据返回。
+
+
 
 
 

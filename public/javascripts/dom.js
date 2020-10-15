@@ -135,6 +135,8 @@ window.ChatroomDOM = (function (Request, NTF, $) {
     $target.removeClass('active').addClass('active');
     $target.siblings('button').removeClass('active');
 
+    console.log(type);
+
     if (type) {
       selectedType = type;
       loginOrOut();

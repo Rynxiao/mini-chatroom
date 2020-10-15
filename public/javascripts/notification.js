@@ -33,7 +33,7 @@ window.ChatNotification = (function(Request) {
     subscribe: function() {
       var that = this;
 
-      Request.getV2Datas(this.getKey(),{ timeout: 10000 }).then(function(res) {
+      Request.getV2Datas(this.getKey(),{ timeout: 4000 }).then(function(res) {
         var data = res.data;
         window.ChatroomDOM.renderData(res);
         that.subscribe();
