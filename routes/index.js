@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const chatRoom = require('../public/javascripts/server/chatroom');
+const Event = require('../public/javascripts/server/event');
 const _ = require('lodash');
 
 /* GET home page. */
@@ -30,6 +31,7 @@ router.get('/send', function(req, res) {
   const connector = _.get(req.query, 'name', '');
   const content = _.get(req.query, 'content', '');
   chatRoom.receive({ connector: connector, content: content });
+  Event.emit();
   res.json({ code: 200, data: null });
 });
 
@@ -65,15 +67,15 @@ router.get('/sse', function(req, res) {
   res.write("retry: 10000\n");
   res.write("data: " + JSON.stringify(response) + "\n\n");
 
-  var interval = setInterval(function () {
+  var unsubscribe = Event.subscribe(function() {
     const connectors = chatRoom.getConnectors();
     const messages = chatRoom.getMessages();
     const response = { code: 200, data: { connectors: connectors, messages: messages } };
     res.write("data: " + JSON.stringify(response) + "\n\n");
-  }, 1000);
+  });
 
   req.connection.addListener("close", function () {
-    clearInterval(interval);
+    unsubscribe();
   }, false);
 });
 
