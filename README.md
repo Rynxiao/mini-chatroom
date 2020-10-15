@@ -3,7 +3,7 @@
 注意上面的推送二字打了引号，这就意味着在现有的几种实现方式中，并不是服务器端主动地推送，而是通过一定的手段营造了一种实时的假象。就目前现有的几种技术而言，主要有以下几类：
 
 - 客户端轮询：传统意义上的轮询(Short Polling)
-- 客户端 + 服务器端轮询：长轮询(Long Polling/COMET)
+- 服务器端轮询：长轮询(Long Polling/COMET)
 - 全双工通信：Websocket
 - 单向服务器推送：Server-Sent Events(SSE)
 
@@ -273,7 +273,7 @@ io.on('connection', (socket) => {
 
 目前除了IE以及低版本的浏览器不支持，基本支持绝大多数的现代浏览器。
 
-[![image-20201015223641766](/Users/ryn/Documents/coding/mini-chatroom/screenshots/sse2.png)](https://caniuse.com/?search=Server-Sent%20Events)
+[![sse2](/Users/ryn/Documents/coding/mini-chatroom/screenshots/sse2.png)](https://caniuse.com/?search=Server-Sent%20Events)
 
 ### 代码实现
 
@@ -336,7 +336,7 @@ router.get('/sse', function(req, res) {
 
 ## 总结
 
-- 短轮询、长轮询实现成本相对比较简单，适用于一些实时性要求不高的消息推送，在实时性要求高德场景下，会存在延迟以及会给服务器带来更大的压力
+- 短轮询、长轮询实现成本相对比较简单，适用于一些实时性要求不高的消息推送，在实时性要求高的场景下，会存在延迟以及会给服务器带来更大的压力
 - websocket目前而言实现成本相对较低，适合于双工通信，对于多人在线，要求实时性较高的项目比较实用
 - SSE只能是服务器端推送消息，因此对于不需要双向通信的项目比较适用
 
