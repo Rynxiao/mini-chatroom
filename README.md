@@ -5,7 +5,7 @@
 - 客户端轮询：传统意义上的轮询(Short Polling)
 - 客户端 + 服务器端轮询：长轮询(Long Polling/COMET)
 - 全双工通信：Websocket
-- 服务器端轮询：Server-Sent Events(SSE)
+- 单向服务器推送：Server-Sent Events(SSE)
 
 从上面可以看出，真正是由服务器端进行消息推动的也就是Websocket以及SSE，至于轮询和长轮询就是营造出的假象。
 
