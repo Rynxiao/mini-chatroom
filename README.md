@@ -7,8 +7,6 @@
 - 全双工通信：Websocket
 - 单向服务器推送：Server-Sent Events(SSE)
 
-从上面可以看出，真正是由服务器端进行主动消息推送的也就是Websocket以及SSE，至于轮询和长轮询就是营造出的假象。
-
 文中会以一个简易聊天室的例子来分别通过上述的四种方式实现，代码地址[mini-chatroom](https://github.com/Rynxiao/mini-chatroom)
 
 ![chatroom](./screenshots/overview.gif)
@@ -24,7 +22,8 @@
 - 不断的发送和关闭请求，对服务器的压力会比较大，因为本身开启Http连接就是一件比较耗资源的事情
 - 轮询的时间间隔不好控制。如果要求的实时性比较高，显然使用短轮询会有明显的短板，如果设置interval的间隔过长，会导致消息延迟，而如果太短，会对服务器产生压力
 
-代码实现：
+### 代码实现
+
 ```javascript
 var ShortPollingNotification = {
   datasInterval: null,
@@ -63,7 +62,8 @@ var ShortPollingNotification = {
 - 对于内容变化的轮询由客户端改成了服务器端（客户端会在连接中断之后，会再次发送请求，对比短轮询来说，大大减少了发起连接的次数）
 - 客户端只会在数据改变时去作相应的改变，对比短轮询来说，并不是全盘接收
 
-代码实现：
+### 代码实现
+
 ```javascript
 // 客户端
 var LongPollingNotification = {
@@ -157,7 +157,114 @@ intervalId = setInterval(function() {
 
 可以看到，断开连接的两种方式，要么是超时，要么是请求有数据返回。
 
+### 基于iframe的长轮询模式
 
+这种模式的具体的原理为：
+
+- 在页面中嵌入一个iframe，地址指向轮询的服务器地址，然后在父页面中放置一个执行函数，比如`execute(data)`
+- 当服务器有内容改变时，会向iframe发送一个脚本`<script>parent.execute(JSON.stringify(data))</script>`
+- 通过发送的脚本，主动执行父页面中的方法，达到推送的效果
+
+具体可以参看[这里](https://juejin.im/post/6844903955240058893#heading-4)
+
+## Websocket
+
+>The WebSocket Protocol enables two-way communication between a client running untrusted code in a controlled environment to a remote host that has opted-in to communications from that code.
+>
+>The protocol consists of an opening handshake followed by basic message framing, layered over TCP.
+>
+>The goal of this technology is to provide a mechanism for browser-based applications that need two-way communication with servers that does not rely on opening multiple HTTP connections (e.g., using XMLHttpRequest or iframe and long polling).
+>
+>
+>The WebSocket Protocol attempts to address the goals of existing bidirectional HTTP technologies in the context of the existing HTTP infrastructure; as such, it is designed to work over HTTP ports 80 and 443 as well as to support HTTP proxies and intermediaries, even if this implies some complexity specific to the current environment.
+>
+
+### 特征
+
+- websocket是双向通信的，设计的目的主要是为了减少传统轮询时http连接数量的开销
+- 建立在TCP协议之上，握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器
+- 与HTTP兼容性良好，同样可以使用80和443端口
+- 没有同源限制，客户端可以与任意服务器通信
+- 可以发送文本，也可以发送二进制数据。
+- 协议标识符是`ws`（如果加密，则为`wss`），服务器网址就是 URL
+
+![websocket](./screenshots/websocket.png)
+
+关于Websocket API方面的知识，这里不再作讲解，可以自己查阅[Websocket API MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+
+### 兼容性
+
+websocket兼容性良好，基本支持所有现代浏览器
+
+![image-20201015215047111](/Users/ryn/Documents/coding/mini-chatroom/screenshots/websocket1.png)
+
+### 代码实现
+
+笔者这里采用的是[socket.io](https://socket.io/)，是基于websocket的封装，提供了客户端以及服务器端的支持
+
+```javascript
+// 客户端
+var WebsocketNotification = {
+  // ...
+  subscribe: function(args) {
+    var connector = args[1];
+    this.socket = io();
+
+    this.socket.emit('register', connector);
+
+    this.socket.on('register done', function() {
+      window.ChatroomDOM.renderAfterRegister();
+    });
+
+    this.socket.on('data', function(res) {
+      window.ChatroomDOM.renderData(res);
+    });
+
+    this.socket.on('disconnect', function() {
+      window.ChatroomDOM.renderAfterLogout();
+    });
+  }
+  // ...
+}
+
+// 服务器端
+var io = socketIo(httpServer);
+
+io.on('connection', (socket) => {
+  socket.on('register', function(connector) {
+    chatRoom.onConnect(connector);
+
+    io.emit('register done');
+
+    var data = chatRoom.getDatas();
+    io.emit('data', { data });
+  });
+
+  socket.on('chat', function(message) {
+    chatRoom.receive(message);
+
+    var data = chatRoom.getDatas();
+    io.emit('data', { data });
+  });
+});
+```
+
+响应格式如下：
+
+![websocket-request-response](./screenshots/websocket2.png)
+
+## Server-Sent Events(SSE)
+
+
+
+## 参考连接
+
+- [The WebSocket Protocol](https://tools.ietf.org/html/rfc6455)
+- [Websocket API MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+- [Server-sent events MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
+- [WebSocket 教程](http://www.ruanyifeng.com/blog/2017/05/websocket.html)
+- [Server-Sent Events 教程](https://www.ruanyifeng.com/blog/2017/05/server-sent_events.html)
+- [webSocket(二) 短轮询、长轮询、Websocket、sse](https://juejin.im/post/6844903955240058893)
 
 
 
