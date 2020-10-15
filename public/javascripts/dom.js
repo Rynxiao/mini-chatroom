@@ -8,7 +8,7 @@ window.ChatroomDOM = (function (Request, NTF, $) {
   var $buttonsEle = $('#buttons');
 
   var connector = '';
-  var selectedType = NTF.NOTIFICATION_MAP.SSE;
+  var selectedType = NTF.NOTIFICATION_MAP.SHORT_POLLING;
 
   var CONNECT_BUTTON_TEXT = 'Connect To Chat Room';
   var INPUT_CONNECT_NAME_TEXT = 'Please input connect name';
@@ -134,8 +134,6 @@ window.ChatroomDOM = (function (Request, NTF, $) {
     var type = $target.data('type');
     $target.removeClass('active').addClass('active');
     $target.siblings('button').removeClass('active');
-
-    console.log(type);
 
     if (type) {
       selectedType = type;

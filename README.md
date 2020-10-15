@@ -7,7 +7,7 @@
 - 全双工通信：Websocket
 - 单向服务器推送：Server-Sent Events(SSE)
 
-文中会以一个简易聊天室的例子来分别通过上述的四种方式实现，代码地址[mini-chatroom](https://github.com/Rynxiao/mini-chatroom)
+文中会以一个简易聊天室的例子来分别通过上述的四种方式实现，代码地址[mini-chatroom](https://github.com/Rynxiao/mini-chatroom)(存在些许bug，主要是为了做演示用)
 
 ![chatroom](./screenshots/overview.gif)
 
@@ -196,7 +196,7 @@ intervalId = setInterval(function() {
 
 websocket兼容性良好，基本支持所有现代浏览器
 
-![image-20201015215047111](/Users/ryn/Documents/coding/mini-chatroom/screenshots/websocket1.png)
+[![image-20201015215047111](/Users/ryn/Documents/coding/mini-chatroom/screenshots/websocket1.png)](https://caniuse.com/mdn-api_websocket)
 
 ### 代码实现
 
@@ -255,7 +255,90 @@ io.on('connection', (socket) => {
 
 ## Server-Sent Events(SSE)
 
+传统意义上服务器端不会主动推送给客户端消息，一般都是客户端主动去请求服务器端获取最新的数据。[SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)就是一种可以主动从服务端推送消息的技术。
 
+> SSE的本质其实就是一个HTTP的长连接，只不过它给客户端发送的不是一次性的数据包，而是一个stream流，格式为text/event-stream，所以客户端不会关闭连接，会一直等着服务器发过来的新的数据流，视频播放就是这样的例子。
+>
+> - SSE 使用 HTTP 协议，现有的服务器软件都支持。WebSocket 是一个独立协议。
+> - SSE 属于轻量级，使用简单；WebSocket 协议相对复杂。
+> - SSE 默认支持断线重连，WebSocket 需要自己实现。
+> - SSE 一般只用来传送文本，二进制数据需要编码后传送，WebSocket 默认支持传送二进制数据。
+> - SSE 支持自定义发送的消息类型。
+
+基本的使用方法，参看[SSE API](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
+
+![sse](./screenshots/sse.png)
+
+### 兼容性
+
+目前除了IE以及低版本的浏览器不支持，基本支持绝大多数的现代浏览器。
+
+[![image-20201015223641766](/Users/ryn/Documents/coding/mini-chatroom/screenshots/sse2.png)](https://caniuse.com/?search=Server-Sent%20Events)
+
+### 代码实现
+
+```javascript
+// 客户端
+var SSENotification = {
+  source: null,
+  subscribe: function() {
+    if ('EventSource' in window) {
+      this.source = new EventSource('/sse');
+
+      this.source.addEventListener('message', function(res) {
+        const d = res.data;
+        window.ChatroomDOM.renderData(JSON.parse(d));
+      });
+    }
+    return this.unsubscribe;
+  },
+  unsubscribe: function () {
+    this.source && this.source.close();
+  }
+}
+
+// 服务器端
+router.get('/sse', function(req, res) {
+  const connectors = chatRoom.getConnectors();
+  const messages = chatRoom.getMessages();
+  const response = { code: 200, data: { connectors: connectors, messages: messages } };
+
+  res.writeHead(200, {
+    "Content-Type":"text/event-stream",
+    "Cache-Control":"no-cache",
+    "Connection":"keep-alive",
+    "Access-Control-Allow-Origin": '*',
+  });
+
+  res.write("retry: 10000\n");
+  res.write("data: " + JSON.stringify(response) + "\n\n");
+
+  var unsubscribe = Event.subscribe(function() {
+    const connectors = chatRoom.getConnectors();
+    const messages = chatRoom.getMessages();
+    const response = { code: 200, data: { connectors: connectors, messages: messages } };
+    res.write("data: " + JSON.stringify(response) + "\n\n");
+  });
+
+  req.connection.addListener("close", function () {
+    unsubscribe();
+  }, false);
+});
+```
+
+下面是控制台的情况，注意观察响应类型
+
+![sse-type](./screenshots/sse3.png)
+
+详情中注意查看请求类型，以及EventStream消息类型
+
+![sse](./screenshots/sse.gif)
+
+## 总结
+
+- 短轮询、长轮询实现成本相对比较简单，适用于一些实时性要求不高的消息推送，在实时性要求高德场景下，会存在延迟以及会给服务器带来更大的压力
+- websocket目前而言实现成本相对较低，适合于双工通信，对于多人在线，要求实时性较高的项目比较实用
+- SSE只能是服务器端推送消息，因此对于不需要双向通信的项目比较适用
 
 ## 参考连接
 
