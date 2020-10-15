@@ -134,10 +134,11 @@ window.ChatroomDOM = (function (Request, NTF, $) {
     var type = $target.data('type');
     $target.removeClass('active').addClass('active');
     $target.siblings('button').removeClass('active');
-    console.log(type);
 
-    selectedType = type;
-    loginOrOut();
+    if (type) {
+      selectedType = type;
+      loginOrOut();
+    }
   });
 
   document.addEventListener('keydown', function (event) {
